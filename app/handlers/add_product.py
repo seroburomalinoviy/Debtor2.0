@@ -4,6 +4,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from app.logic.orm import User, Package
+from app.utils.room import room_buttons
 
 import logging
 
@@ -34,17 +35,21 @@ async def get_cost(message: types.Message, state: FSMContext):
     data = await state.get_data()
     product = data['product']
     user = data['cur_user']
-    logger.info(f"user: {user}")
-    logger.info(f"product: {product}")
+    logger.info(f"user id: {user.tg_id}")
+    logger.info(f"product payer: {product.payer}")
     try:
         product.cost = int(message.text)
         await state.update_data(product=product)
 
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         keyboard.add(f"Оплатил(а) {user.name}")
+        keyboard.add("Продукты")
+        keyboard.add("Интернет")
+        keyboard.add("Для дома")
         keyboard.add('Отмена')
 
-        await message.answer(f"Напишите название или описание покупки \n Или воспользуйтесь кнопками ниже",
+        await message.answer(f"Напишите название/описание покупки, например,что покупку оплатили Вы \n Или "
+                             f"воспользуйтесь кнопками ниже",
                              reply_markup=keyboard)
         await Registration.next()
 
@@ -69,8 +74,8 @@ async def get_description(message: types.Message, state: FSMContext):
 
 async def get_date(message: types.Message, state: FSMContext):
     keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    room_buttons = ['Мои долги', 'Добавить покупку', 'Осмотреться в комнате']
-    keyboard_room.add(*room_buttons)
+    buttons = room_buttons
+    keyboard_room.add(*buttons)
 
     data = await state.get_data()
     product = data['product']

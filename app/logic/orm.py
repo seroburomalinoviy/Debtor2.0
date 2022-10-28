@@ -8,6 +8,7 @@ import uuid
 logger = logging.getLogger(__name__)
 psycopg2.extras.register_uuid() # разрешение использовать uuid
 
+
 class User:
     """Class user"""
 
