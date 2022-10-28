@@ -1,0 +1,4 @@
+venv/
+config/
+debtor_backup
+.idea/
