@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext # продакшн: redis
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from app.logic.orm import User, Room
+from app.utils.room import room_buttons
 
 import logging
 
@@ -42,8 +43,8 @@ async def get_room_pass(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Отмена')
     keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    room_buttons = ['Мои долги', 'Добавить покупку', 'Осмотреться в комнате']
-    keyboard_room.add(*room_buttons)
+    buttons = room_buttons
+    keyboard_room.add(*buttons)
     keyboard_room.add('Отмена')
 
     # выгружаем данные о комнате
@@ -73,8 +74,8 @@ async def get_room_pass(message: types.Message, state: FSMContext):
 
 async def get_user_name(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    room_buttons = ['Мои долги', 'Добавить покупку', 'Осмотреться в комнате']
-    keyboard.add(*room_buttons)
+    buttons = room_buttons
+    keyboard.add(*buttons)
     keyboard.add('Отмена')
 
     # выгружаем данные о комнате
