@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from app.logic.config_reader import load_config
+from app.utils.config_reader import load_config
 from app.handlers.start_bot import register_handlers_start_bot
 from app.handlers.login_room import register_handler_login_room
 from app.handlers.new_room import register_handler_create_room

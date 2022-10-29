@@ -4,9 +4,23 @@ import logging
 from datetime import date
 import uuid
 
+from app.utils.config_reader import load_config
+
 
 logger = logging.getLogger(__name__)
 psycopg2.extras.register_uuid() # разрешение использовать uuid
+
+
+class CommonData:
+    def __init__(self):
+        config = load_config('config/bot.ini')
+        self.__connection = psycopg2.connect(host=config.db.hostname,user=config.db.username,
+                                             password=config.db.password,
+                                  dbname=config.db.name,
+                                  port=config.db.port)
+
+    def get_conn(self):
+        return self.__connection
 
 
 class User:
@@ -18,9 +32,11 @@ class User:
         self.join_date = join_date
         self.is_owner = is_owner
         self.room_name = room_name
+        self.connection = CommonData()
 
     def create(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        # conn = self.connection.get_conn()
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: create -=USER=- data')
@@ -37,7 +53,7 @@ class User:
                 conn.commit()
 
     def get_user(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: get data for user {self.tg_id}')
@@ -55,7 +71,7 @@ class User:
                     return False
 
     def update(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: update data for user {self.tg_id}')
@@ -71,10 +87,14 @@ class User:
                 conn.commit()
 
     def add_room(self):
-        conn =
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor():
                 logger.info(f'Database query: add room for user {self.tg_id}')
+
+                query = """
+                
+                """
 
 
 class Room:
@@ -84,9 +104,10 @@ class Room:
         self.name = name
         self.password = passw
         self.db_id = uuid.uuid4()
+        self.connection = CommonData()
 
     def create(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: create -=ROOM=- data')
@@ -99,24 +120,25 @@ class Room:
 
                 curs.execute(query, {'id':uuid.uuid4(),'group_password': self.password, 'group_name': self.name})
                 conn.commit()
-                logger.debug('Query completed')
+                logger.info('Query completed')
 
     def exist_room(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: validate name -=ROOM=- data')
                 curs.execute("SELECT id FROM groups WHERE group_name=%(room_name)s",
                              {"room_name":self.name})
                 query_result = curs.fetchone()
-
+                logger.info('Query completed')
                 if query_result == None:
                     return False
                 else:
                     return True
 
+
     def update(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: update -=ROOM=- data')
@@ -128,17 +150,18 @@ class Room:
                 """
                 curs.execute(query, {'group_name': self.name, 'group_pass':self.password})
                 conn.commit()
+                logger.info('Query completed')
 
 
     def auth(self):
-        conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
+        conn = self.connection.get_conn()
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: auth name -=ROOM=- data')
                 curs.execute("SELECT id FROM groups WHERE group_name=%(room_name)s AND group_password=%(room_passw)s",
                              {"room_name": self.name, 'room_passw': self.password})
                 query_result = curs.fetchone()
-
+                logger.info('Query completed')
                 if query_result == None:
                     return False
                 else:
@@ -154,6 +177,7 @@ class Package:
         self.description = description
         self.date = paydate
         self.debtors = debtors
+        self.connection = CommonData()
 
 
 

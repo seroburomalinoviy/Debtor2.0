@@ -12,6 +12,7 @@ class Dbase:
     username: str
     password: str
     name: str
+    port: str
 
 @dataclass
 class Config:
@@ -34,7 +35,8 @@ def load_config(path: str):
             hostname=db["DB_HOSTNAME"],
             username=db["DB_USERNAME"],
             password=db["DB_PASSWORD"],
-            name=db["DB_NAME"]
+            name=db["DB_NAME"],
+            port=db["DB_PORT"]
 
         )
     )
