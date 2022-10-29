@@ -40,7 +40,7 @@ class User:
         conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
         with conn:
             with conn.cursor() as curs:
-                logger.info('Database query: get -=USER=- data')
+                logger.info(f'Database query: get data for user {self.tg_id}')
 
                 curs.execute("SELECT name, join_date, group_name FROM users WHERE telegram_id=%(tg_id)s",
                              {"tg_id": self.tg_id})
@@ -58,7 +58,7 @@ class User:
         conn = psycopg2.connect(host='localhost', user='postgres', password='pgadmin', dbname='debtor_db', port="5433")
         with conn:
             with conn.cursor() as curs:
-                logger.info('Database query: update -=USER=- data')
+                logger.info(f'Database query: update data for user {self.tg_id}')
 
                 query = """
                 UPDATE users 
@@ -69,6 +69,12 @@ class User:
                 curs.execute(query, {'name': self.name, 'owner': self.is_owner, 'room_name':self.room_name,
                                      'tg_id': self.tg_id})
                 conn.commit()
+
+    def add_room(self):
+        conn =
+        with conn:
+            with conn.cursor():
+                logger.info(f'Database query: add room for user {self.tg_id}')
 
 
 class Room:

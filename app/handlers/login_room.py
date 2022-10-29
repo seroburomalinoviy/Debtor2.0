@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext # продакшн: redis
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from app.logic.orm import User, Room
+from app.utils.room import room_buttons
 
 import logging
 
@@ -65,8 +66,8 @@ async def get_room_name(message: types.Message, state: FSMContext):
 # в диспетчере задано, что когда автомат в состоянии ожидания логина, то всегда вызывается функция get_room_pass
 async def get_room_pass(message: types.Message, state: FSMContext):
     keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    room_buttons = ['Мои долги', 'Добавить покупку', 'Осмотреться в комнате']
-    keyboard_room.add(*room_buttons)
+    buttons = room_buttons
+    keyboard_room.add(*buttons)
     keyboard_room.add('Отмена')
 
     room_data = await state.get_data()
