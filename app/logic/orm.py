@@ -11,32 +11,26 @@ logger = logging.getLogger(__name__)
 psycopg2.extras.register_uuid() # разрешение использовать uuid
 
 
-class CommonData:
-    def __init__(self):
-        config = load_config('config/bot.ini')
-        self.__connection = psycopg2.connect(host=config.db.hostname,user=config.db.username,
-                                             password=config.db.password,
-                                  dbname=config.db.name,
-                                  port=config.db.port)
-
-    def get_conn(self):
-        return self.__connection
-
-
 class User:
     """Class user"""
-
+    config = load_config('config/bot.ini')
+    
+    connection = psycopg2.connect(host=config.db.hostname, user=config.db.username,
+                                  password=config.db.password,
+                                  dbname=config.db.name,
+                                  port=config.db.port)
+    
     def __init__(self, tg_id, name='', join_date=date.today().strftime("%d.%m.%y"), is_owner=False, room_name=''):
         self.tg_id = tg_id
         self.name = name
         self.join_date = join_date
         self.is_owner = is_owner
         self.room_name = room_name
-        self.connection = CommonData()
+
 
     def create(self):
-        # conn = self.connection.get_conn()
-        conn = self.connection.get_conn()
+        # conn = self.connection
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: create -=USER=- data')
@@ -53,7 +47,7 @@ class User:
                 conn.commit()
 
     def get_user(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: get data for user {self.tg_id}')
@@ -71,7 +65,7 @@ class User:
                     return False
 
     def update(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: update data for user {self.tg_id}')
@@ -87,7 +81,7 @@ class User:
                 conn.commit()
 
     def add_room(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor():
                 logger.info(f'Database query: add room for user {self.tg_id}')
@@ -100,14 +94,19 @@ class User:
 class Room:
     """Representation of room"""
 
+    config = load_config('config/bot.ini')
+    connection = psycopg2.connect(host=config.db.hostname, user=config.db.username,
+                                  password=config.db.password,
+                                  dbname=config.db.name,
+                                  port=config.db.port)
+
     def __init__(self, name, passw=''):
         self.name = name
         self.password = passw
         self.db_id = uuid.uuid4()
-        self.connection = CommonData()
 
     def create(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: create -=ROOM=- data')
@@ -123,7 +122,7 @@ class Room:
                 logger.info('Query completed')
 
     def exist_room(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: validate name -=ROOM=- data')
@@ -138,7 +137,7 @@ class Room:
 
 
     def update(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: update -=ROOM=- data')
@@ -154,7 +153,7 @@ class Room:
 
 
     def auth(self):
-        conn = self.connection.get_conn()
+        conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: auth name -=ROOM=- data')
@@ -169,7 +168,13 @@ class Room:
 
 
 class Package:
-    """Class of purchases"""
+    """representation of purchases"""
+
+    config = load_config('config/bot.ini')
+    connection = psycopg2.connect(host=config.db.hostname, user=config.db.username,
+                                  password=config.db.password,
+                                  dbname=config.db.name,
+                                  port=config.db.port)
 
     def __init__(self, tg_id:str, cost=0,description='', paydate=date.today().strftime("%d.%m.%y"), *debtors):
         self.payer = tg_id
@@ -177,7 +182,6 @@ class Package:
         self.description = description
         self.date = paydate
         self.debtors = debtors
-        self.connection = CommonData()
 
 
 
