@@ -27,6 +27,7 @@ async def take_package(message: types.Message, state: FSMContext):
     product = Package(str(message.from_user.id))
     await state.update_data(product=product)
     await state.update_data(cur_user=user)
+    await message.answer(f"Мы добавляем покупку в комнату: {room.name}")
     await message.answer(f"Достаю ручку и записываю... \n Введите стоимость покупки:", reply_markup=keyboard)
     await Registration.wait_cost.set()
 

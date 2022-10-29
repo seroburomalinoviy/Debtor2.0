@@ -30,7 +30,14 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 async def cmd_cancel(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.answer("[Отменяю]", reply_markup=types.ReplyKeyboardRemove())
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    user = User(str(message.from_user.id))
+    if user.get_user():
+        buttons = room_buttons
+        keyboard.add(*buttons)
+    else:
+        keyboard = types.ReplyKeyboardRemove()
+    await message.answer("[Отменяю]", reply_markup=keyboard)
 
 
 def register_handlers_start_bot(dp: Dispatcher):

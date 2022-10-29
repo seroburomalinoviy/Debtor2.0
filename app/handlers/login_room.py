@@ -25,8 +25,8 @@ async def login_start(message: types.Message, state: FSMContext):
     keyboard.add('Отмена')
 
     user = User(str(message.from_user.id))
-    user_exists = user.get_user()
-    if not user_exists:
+    user = user.get_user()
+    if not user:
         await message.answer(f"Вы не зарегистрированы. Введите своё имя.", reply_markup=keyboard)
         await Registartation.wait_user_name.set()
     else:
@@ -42,7 +42,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
     user.name = message.text
     user.create()
 
-    logger.info(f"User {user.name} created")
+    logger.info(f"User {user.tg_id} created")
     await message.answer(f"Вы успешно зарегистрированы")
     await message.answer(f"[Введите название комнаты🚪]", reply_markup=keyboard)
     await Registartation.wait_room_name.set()
@@ -53,14 +53,14 @@ async def get_room_name(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Отмена')
 
-    if len(message.text) < 30:
+    if len(message.text) > 30:
+        # продолжаем ожидать ввода пароля, не переводим в автомат в след сост
+        await message.answer("[Некорректный ввод]", reply_markup=keyboard)
+    else:
         room = Room(name=message.text)
         await state.update_data(room=room)
         await Registartation.next() # переводим автомат в следующее состояние - ожидание ввода пароля
         await message.answer("[Введите пароль]", reply_markup=keyboard)
-    else:
-        # продолжаем ожидать ввода пароля, не переводим в автомат в след сост
-        await message.answer("[Некорректный ввод]", reply_markup=keyboard)
 
 
 # в диспетчере задано, что когда автомат в состоянии ожидания логина, то всегда вызывается функция get_room_pass
@@ -79,6 +79,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.get_user()
         user.room_name = room.name
         user.is_owner = False
+        user.current_room = room.name
         user.update()
 
         await message.answer(f"🔆 \n Вы вошли в комнату 🚪 {room.name}", reply_markup=keyboard_room)
