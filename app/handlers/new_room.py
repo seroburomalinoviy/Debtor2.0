@@ -65,16 +65,15 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=keyboard)
     else:
         # пользователь уже зарегистрирован, добавим новую запись в бд с данным пользователем и новой комнатой
-        # Имя комнаты уже проверено на уникальность
-        room.owner = str(message.from_user.id)
-        room.create()  # сохраняем записанные данные в бд
+        room.create()
+        room.owner = user.tg_id
+        room.new_member = user.tg_id
+        room.update()  # сохраняем записанные данные в бд
         room.add_user()  # добавим в комнату юзера
         user.current_room = room.name
         user.update() # обновоили текущую комнату пользователя
 
-
-
-        logger.info(f"User {user.name} authorized and added in room {user.current_room}")
+        logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
         await message.answer(f"Вы вошли в комнату 🚪 {user.current_room}!",
                              reply_markup=keyboard_room)
         await state.finish()
@@ -89,11 +88,14 @@ async def get_user_name(message: types.Message, state: FSMContext):
     # выгружаем данные о комнате
     room_data = await state.get_data()
     room = room_data['room']
-    room.create() # сохраняем записанные данные в бд
-
+    room.create()  # сохраняем записанные данные в бд
     # создаем пользователя и привязываем его к комнате
-    user = User(tg_id=str(message.from_user.id), name=message.text, is_owner=True, current_room=room.name)
+    user = User(tg_id=str(message.from_user.id), name=message.text, current_room=room.name)
     user.create()
+    room.owner = user.tg_id
+    room.new_member = user.tg_id
+    room.update()
+    room.add_user()  # добавим в комнату юзера
     logger.info(f"User {user.tg_id} created and added in room {user.current_room}")
     await message.answer(f"Вы успешно зарегистрировались и вошли в комнату 🚪 {room.name}!", reply_markup=keyboard)
     await state.finish()

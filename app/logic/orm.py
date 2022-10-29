@@ -36,12 +36,11 @@ class User:
                 query = """
                 INSERT INTO users 
                 VALUES 
-                ( %(id)s, %(telegram_id)s, %(name)s, %(join_date)s, %(is_owner)s, %(current_group)s )
+                ( %(id)s, %(telegram_id)s, %(name)s, %(join_date)s, %(current_group)s )
                 """
 
                 curs.execute(query, {'id':uuid.uuid4(), 'telegram_id': self.tg_id, 'name': self.name,
-                                     'join_date':self.join_date, 'is_owner':
-                    self.is_owner, 'current_group': self.current_room})
+                                     'join_date':self.join_date,'current_group': self.current_room})
                 conn.commit()
                 logger.info('Query completed')
 
@@ -73,10 +72,10 @@ class User:
                 query = """
                 UPDATE users 
                 SET 
-                name=%(name)s, is_owner=%(owner)s, current_group=%(current_room)s
+                name=%(name)s, current_group=%(current_room)s
                 WHERE telegram_id=%(tg_id)s
                 """
-                curs.execute(query, {'name': self.name, 'owner': self.is_owner, 'current_room': self.current_room,
+                curs.execute(query, {'name': self.name, 'current_room': self.current_room,
                                      'tg_id': self.tg_id})
                 conn.commit()
                 logger.info('Query completed')
@@ -106,7 +105,7 @@ class Room:
                                   dbname=config.db.name,
                                   port=config.db.port)
 
-    def __init__(self, name, passw, owner, new_member=''):
+    def __init__(self, name, passw='', owner='', new_member=''):
         self.name = name
         self.password = passw
         self.owner = owner
@@ -119,19 +118,12 @@ class Room:
             with conn.cursor() as curs:
                 logger.info(f'Database query: create new room {self.name}')
                 query = """
-                SELECT id FROM users WHERE telegram_id=%(tg_id)s
-                """
-                curs.execute(query, {'tg_id': self.owner})
-                user_id = curs.fetchone()
-
-                query = """
                 INSERT INTO groups 
                 VALUES 
-                ( %(id)s, %(group_password)s, %(group_name)s, %(owner_id)s)
+                ( %(id)s, %(group_password)s, %(group_name)s)
                 """
 
-                curs.execute(query, {'id':uuid.uuid4(),'group_password': self.password, 'group_name': self.name,
-                                     'owner_id': user_id[0]})
+                curs.execute(query, {'id':uuid.uuid4(),'group_password': self.password, 'group_name': self.name})
                 conn.commit()
                 logger.info('Query completed')
 
@@ -154,13 +146,17 @@ class Room:
         with conn:
             with conn.cursor() as curs:
                 logger.info('Database query: update -=ROOM=- data')
-
+                query = """
+                SELECT id FROM users WHERE telegram_id=%(tg_id)s
+                """
+                curs.execute(query, {'tg_id': self.owner})
+                user_id = curs.fetchone()
                 query = """
                 UPDATE groups 
-                SET group_password=%(group_pass)s
+                SET group_password=%(group_pass)s, owner_id=%(owner_id)s
                 WHERE group_name=%(group_name)s
                 """
-                curs.execute(query, {'group_name': self.name, 'group_pass':self.password})
+                curs.execute(query, {'group_name': self.name, 'group_pass': self.password, 'owner_id': user_id[0]})
                 conn.commit()
                 logger.info('Query completed')
 
