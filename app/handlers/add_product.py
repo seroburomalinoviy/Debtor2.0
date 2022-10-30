@@ -7,6 +7,7 @@ from app.logic.orm import User, Package
 from app.utils.room import room_buttons
 
 import logging
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ async def take_package(message: types.Message, state: FSMContext):
     product = Package(str(message.from_user.id))
     await state.update_data(product=product)
     await state.update_data(cur_user=user)
-    await message.answer(f"Мы добавляем покупку в комнату: {room.name}")
-    await message.answer(f"Достаю ручку и записываю... \n Введите стоимость покупки:", reply_markup=keyboard)
+    await message.answer(f"Мы добавляем покупку в комнату 🚪 {user.current_room}")
+    await message.answer(f"Достаю ручку и записываю... \nВведите стоимость покупки:", reply_markup=keyboard)
     await Registration.wait_cost.set()
 
 
@@ -49,7 +50,7 @@ async def get_cost(message: types.Message, state: FSMContext):
         keyboard.add("Для дома")
         keyboard.add('Отмена')
 
-        await message.answer(f"Напишите название/описание покупки, например,что покупку оплатили Вы \n Или "
+        await message.answer(f"Напишите название/описание покупки, например,что покупку оплатили Вы \nИли "
                              f"воспользуйтесь кнопками ниже",
                              reply_markup=keyboard)
         await Registration.next()
@@ -69,27 +70,39 @@ async def get_description(message: types.Message, state: FSMContext):
     product.description = message.text
     await state.update_data(product=product)
 
-    await message.answer(f"Напишите дату (в формате: 01012001) \n Или воспользуйтесь кнопками ниже", reply_markup=keyboard)
+    await message.answer(f"Вбейте дату (в формате: 01012001) \n Или воспользуйтесь кнопками ниже",
+                         reply_markup=keyboard)
     await Registration.next()
 
 
 async def get_date(message: types.Message, state: FSMContext):
-    keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = room_buttons
-    keyboard_room.add(*buttons)
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     data = await state.get_data()
     product = data['product']
+    user = data['cur_user']
 
     if message.text == 'Сегодня':
         logger.info(f"product: {product.cost}")
-        await message.answer(f"Покупка записана!", reply_markup=keyboard_room)
+        keyboard.add(*room_buttons)
+        await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
+                             f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}")
+        await message.answer(f"Записал!", reply_markup=keyboard)
         await state.finish()
 
     else:
-        product.date = message.text
-        await message.answer(f"Покупка записана!", reply_markup=keyboard_room)
-        await state.finish()
+        if datetime.datetime.strptime(message.text, "%d%m%Y") <= datetime.datetime.today():
+            product.date = datetime.datetime.strptime(message.text, "%d%m%Y").strftime("%d.%m.%y")
+            keyboard.add(*room_buttons)
+            await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
+                                 f" {product.date}\nОплатили: Вы")
+            await message.answer(f"Записал!", reply_markup=keyboard)
+            await state.finish()
+        else:
+            keyboard.add('Отмена')
+            await message.answer(f"Назад в будущее?")
+            await message.answer(f"Попробуй еще раз", reply_markup=keyboard)
+            await Registration.wait_date.set()
 
 
 def register_handlers_add_product(dp: Dispatcher):

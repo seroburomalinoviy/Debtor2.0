@@ -149,7 +149,7 @@ class Room:
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info('Database query: auth name -=ROOM=- data')
+                logger.info(f'Database query: auth in {self.name}')
                 curs.execute("SELECT id FROM groups WHERE group_name=%(room_name)s AND group_password=%(room_passw)s",
                              {"room_name": self.name, 'room_passw': self.password})
                 query_result = curs.fetchone()
@@ -216,12 +216,21 @@ class Package:
                                   dbname=config.db.name,
                                   port=config.db.port)
 
-    def __init__(self, tg_id:str, cost=0,description='', paydate=date.today().strftime("%d.%m.%y"), *debtors):
+    def __init__(self, tg_id: str, cost=0,description='', date=date.today().strftime("%d.%m.%y"), *debtors):
         self.payer = tg_id
         self.cost = cost
         self.description = description
-        self.date = paydate
+        self.date = date
         self.debtors = debtors
+
+    def create(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'Database query: create package')
+
+
+
 
 
 
