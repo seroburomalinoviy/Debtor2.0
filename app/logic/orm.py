@@ -80,21 +80,6 @@ class User:
                 conn.commit()
                 logger.info('Query completed')
 
-    def get_roomlist(self):
-        conn = self.connection
-        with conn:
-            with conn.cursor() as curs:
-                logger.info(f'Database query: get list of rooms for user {self.tg_id}')
-                query = """
-                SELECT group_name FROM users_groups WHERE telegram_id=%(tg_id)s 
-                """
-                curs.execute(query, {'tg_id': self.tg_id})
-                logger.info('Query completed')
-                query_result = curs.fetchall()
-                return query_result[:]
-
-
-
 
 class Room:
     """Representation of room"""
@@ -131,7 +116,7 @@ class Room:
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info('Database query: validate name -=ROOM=- data')
+                logger.info(f'Database query: validate exists room {self.name}')
                 curs.execute("SELECT id FROM groups WHERE group_name=%(room_name)s",
                              {"room_name":self.name})
                 query_result = curs.fetchone()
@@ -200,6 +185,26 @@ class Room:
                 conn.commit()
                 logger.info('Query completed')
 
+    def get_userlist(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'Database query: get users at room  {self.name}')
+                query = """
+                SELECT id FROM groups WHERE group_name=%(room_name)s
+                """
+                curs.execute(query, {'room_name': self.name})
+                room_id = curs.fetchone()
+                query = """
+                SELECT DISTINCT telegram_id FROM public.users inner join public.users_groups on 
+                public.users_groups.user_id=public.users.id WHERE group_id=%(room_id)s
+                """
+                curs.execute(query, {'room_id': room_id[0]})
+                query_result = curs.fetchall()
+                logger.info('Query completed')
+
+                userlist = [i[0].split(' ')[0] for i in query_result]
+                return userlist
 
 
 class Package:

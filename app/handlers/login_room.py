@@ -51,20 +51,22 @@ async def get_user_name(message: types.Message, state: FSMContext):
 # в диспетчере задано, что когда автомат в состоянии ожидания логина, то всегда вызывается функция get_room_num
 async def get_room_name(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Отмена')
 
     if len(message.text) > 30:
         # продолжаем ожидать ввода пароля, не переводим в автомат в след сост
+        keyboard.add('Отмена')
         await message.answer("[Некорректный ввод]", reply_markup=keyboard)
     else:
         room = Room(name=message.text)
         if room.exist_room():
             await state.update_data(room=room)
             await Registartation.next() # переводим автомат в следующее состояние - ожидание ввода пароля
+            keyboard.add('Отмена')
             await message.answer("Введите пароль\n🚪 ...", reply_markup=keyboard)
         else:
             keyboard.add("/create_room")
             keyboard.add("/login")
+            keyboard.add('Отмена')
             await message.answer("Такой комнаты не существует, попробуйте создать комнату или повторить попытку",
                                  reply_markup=keyboard)
             await state.finish()
@@ -84,10 +86,14 @@ async def get_room_pass(message: types.Message, state: FSMContext):
     if room.auth():
         user = User(str(message.from_user.id))
         user.get_user()
-        user.current_room = room.name
-        room.new_member = user.tg_id
-        room.add_user()
-        user.update()
+        user_list = room.get_userlist()
+        if user.tg_id in user_list:
+            print('here')
+            user.current_room = room.name
+            user.update()
+        else:
+            room.new_member = user.tg_id
+            room.add_user()
 
         await message.answer(f"🔆 \n Вы вошли в комнату \n🚪 {room.name}", reply_markup=keyboard_room)
         await state.finish()
