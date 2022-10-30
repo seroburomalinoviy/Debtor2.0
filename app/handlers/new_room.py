@@ -43,11 +43,6 @@ async def get_room_name(message: types.Message, state: FSMContext):
 
 async def get_room_pass(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Отмена')
-    keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = room_buttons
-    keyboard_room.add(*buttons)
-    keyboard_room.add('Отмена')
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
@@ -62,6 +57,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         del user
         await state.update_data(room=room)
         await Registration.next()
+        keyboard.add('Отмена')
         await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=keyboard)
     else:
         # пользователь уже зарегистрирован, добавим новую запись в бд с данным пользователем и новой комнатой
@@ -74,16 +70,15 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.update() # обновоили текущую комнату пользователя
 
         logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
+        keyboard.add(*room_buttons)
         await message.answer(f"""Вы вошли в комнату \n🚪 {user.current_room} """,
-                             reply_markup=keyboard_room)
+                             reply_markup=keyboard)
         await state.finish()
 
 
 async def get_user_name(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    buttons = room_buttons
-    keyboard.add(*buttons)
-    keyboard.add('Отмена')
+    keyboard.add(*room_buttons)
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
