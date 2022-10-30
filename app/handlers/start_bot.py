@@ -13,17 +13,23 @@ async def cmd_start(message: types.Message, state: FSMContext):
     if user.get_user():
         buttons = room_buttons
         keyboard.add(*buttons)
+        mes = f"""
+        Ты в Прихожей. Стоишь у комнаты \n🚪 {user.current_room.split(' ')[0]} \n
+                [Войти в другую комнату] - /login \n 
+                [Создать комнату] - /create_room \n
+        Для отмены какого либо действия напиши 'отмена' или (/cancel).
+                """
     else:
         keyboard = types.ReplyKeyboardRemove()
-    await message.answer(
-        f"""
+        mes = f"""
 Привет, ты попал в Прихожею! \n
 Для того чтобы авторизоваться, тебе будет предложено ввести номер комнаты и уникальный пароль для входа.\n
 Также ты можешь создать свою комнату.\n
         [Войти в комнату] - /login \n 
         [Создать комнату] - /create_room \n
 Для отмены какого либо действия напиши 'отмена' или (/cancel).
-        """,
+        """
+    await message.answer(mes,
         reply_markup=keyboard
     )
 
@@ -35,9 +41,11 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     if user.get_user():
         buttons = room_buttons
         keyboard.add(*buttons)
+        await message.answer("[Отменяю]")
+        await message.answer(f"Вы в комнате\n🚪 {user.current_room.split(' ')[0]}", reply_markup=keyboard)
     else:
         keyboard = types.ReplyKeyboardRemove()
-    await message.answer("[Отменяю]", reply_markup=keyboard)
+        await message.answer("[Отменяю]", reply_markup=keyboard)
 
 
 def register_handlers_start_bot(dp: Dispatcher):

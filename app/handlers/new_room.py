@@ -20,7 +20,7 @@ async def start_creating(message: types.Message, state: FSMContext):
     await state.finish() # перед логином, сбрасываем все возможные состояния
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add('Отмена')
-    await message.answer(f"Введите название комнаты🚪", reply_markup=keyboard)
+    await message.answer(f"""Введите название комнаты \n🚪 "..." """, reply_markup=keyboard)
     await Registration.wait_room_name.set()
 
 
@@ -34,7 +34,7 @@ async def get_room_name(message: types.Message, state: FSMContext):
         if not room.exist_room():
             await state.update_data(room=room) # сохраняем информацию о комнате в виде значения словаря
             await Registration.next()
-            await message.answer(f"Создайте пароль для комнаты🚪")
+            await message.answer(f"Создайте пароль для комнаты \n🚪 ...")
         else:
             await message.answer(f"Это название уже существует, попробуй еще раз")
     else:
@@ -74,7 +74,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.update() # обновоили текущую комнату пользователя
 
         logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
-        await message.answer(f"Вы вошли в комнату 🚪 {user.current_room}!",
+        await message.answer(f"""Вы вошли в комнату \n🚪 {user.current_room} """,
                              reply_markup=keyboard_room)
         await state.finish()
 
@@ -97,7 +97,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
     room.update()
     room.add_user()  # добавим в комнату юзера
     logger.info(f"User {user.tg_id} created and added in room {user.current_room}")
-    await message.answer(f"Вы успешно зарегистрировались и вошли в комнату 🚪 {room.name}!", reply_markup=keyboard)
+    await message.answer(f"Вы успешно зарегистрировались и вошли в комнату \n🚪 {room.name}", reply_markup=keyboard)
     await state.finish()
 
 
