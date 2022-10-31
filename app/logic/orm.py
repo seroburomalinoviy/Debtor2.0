@@ -216,8 +216,10 @@ class Package:
                                   dbname=config.db.name,
                                   port=config.db.port)
 
-    def __init__(self, tg_id: str, cost=0,description='', date=date.today().strftime("%d.%m.%y"), *debtors):
+    def __init__(self, tg_id: str, room_name: str, cost=0,description='', date=date.today().strftime("%d.%m.%y"),
+                 *debtors):
         self.payer = tg_id
+        self.room_name = room_name
         self.cost = cost
         self.description = description
         self.date = date
@@ -228,6 +230,30 @@ class Package:
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: create package')
+
+                query = """
+                SELECT id FROM users WHERE telegram_id=%(tg_id)s
+                """
+                curs.execute(query, {'tg_id': self.payer})
+                user_id = curs.fetchone()
+
+                query = """
+                SELECT id FROM groups WHERE group_name=%(room_name)s
+                """
+                curs.execute(query, {'room_name': self.room_name})
+                room_id = curs.fetchone()
+
+                query = """
+                INSERT INTO payments
+                VALUES
+                ( %(id)s, %(date)s, %(payer_id)s, %(group_id)s, %(cost)s )
+                """
+                curs.execute(query, {'id': uuid.uuid4(), 'date': self.date, 'payer_id': user_id[0], 'group_id':
+                    room_id[0], 'cost': self.cost})
+                conn.commit()
+                logger.info('Query completed')
+
+
 
 
 

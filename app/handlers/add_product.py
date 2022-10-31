@@ -25,7 +25,7 @@ async def take_package(message: types.Message, state: FSMContext):
 
     user = User(str(message.from_user.id))
     user.get_user()
-    product = Package(str(message.from_user.id))
+    product = Package(user.tg_id, user.current_room)
     await state.update_data(product=product)
     await state.update_data(cur_user=user)
     await message.answer(f"Мы добавляем покупку в комнату 🚪 {user.current_room}")
@@ -83,7 +83,8 @@ async def get_date(message: types.Message, state: FSMContext):
     user = data['cur_user']
 
     if message.text == 'Сегодня':
-        logger.info(f"product: {product.cost}")
+
+        product.create()
         keyboard.add(*room_buttons)
         await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
                              f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}")
@@ -91,16 +92,26 @@ async def get_date(message: types.Message, state: FSMContext):
         await state.finish()
 
     else:
-        if datetime.datetime.strptime(message.text, "%d%m%Y") <= datetime.datetime.today():
-            product.date = datetime.datetime.strptime(message.text, "%d%m%Y").strftime("%d.%m.%y")
-            keyboard.add(*room_buttons)
-            await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
-                                 f" {product.date}\nОплатили: Вы")
-            await message.answer(f"Записал!", reply_markup=keyboard)
-            await state.finish()
-        else:
+
+        try:
+            input_date = datetime.datetime.strptime(message.text, "%d%m%Y")
+            if input_date <= datetime.datetime.today():
+                product.date = datetime.datetime.strptime(message.text, "%d%m%Y").strftime("%d.%m.%y")
+                product.create()
+                keyboard.add(*room_buttons)
+                await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
+                                     f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}")
+                await message.answer(f"Записал!", reply_markup=keyboard)
+                await state.finish()
+            else:
+                keyboard.add('Сегодня')
+                keyboard.add('Отмена')
+                await message.answer(f"Назад в будущее?")
+                await message.answer(f"Попробуй еще раз", reply_markup=keyboard)
+                await Registration.wait_date.set()
+        except ValueError:
+            keyboard.add('Сегодня')
             keyboard.add('Отмена')
-            await message.answer(f"Назад в будущее?")
             await message.answer(f"Попробуй еще раз", reply_markup=keyboard)
             await Registration.wait_date.set()
 
