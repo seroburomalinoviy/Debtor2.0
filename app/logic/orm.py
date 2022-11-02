@@ -107,7 +107,6 @@ class Room:
                 VALUES 
                 ( %(id)s, %(group_password)s, %(group_name)s)
                 """
-
                 curs.execute(query, {'id':uuid.uuid4(),'group_password': self.password, 'group_name': self.name})
                 conn.commit()
                 logger.info('Query completed')

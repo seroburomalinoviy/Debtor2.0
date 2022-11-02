@@ -18,21 +18,6 @@ class Registartation(StatesGroup):
     wait_user_name = State()
 
 
-# async def login_start(message: types.Message, state: FSMContext):
-#     # перед логином, сбрасываем все возможные состояния
-#     await state.finish()
-#     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     keyboard.add('Отмена')
-#
-#     user = User(str(message.from_user.id))
-#     user = user.get_user()
-#     if not user:
-#         await message.answer(f"Вы не зарегистрированы. Введите своё имя.", reply_markup=keyboard)
-#         await Registartation.wait_user_name.set()
-#     else:
-#         await message.answer(f"""Введите название комнаты\n🚪 "..." """, reply_markup=keyboard)
-#         await Registartation.wait_room_name.set()
-
 async def login_start(message: types.Message, state: FSMContext):
     # перед логином, сбрасываем все возможные состояния
     await state.finish()
@@ -84,6 +69,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
             else:
                 room.new_member = user.tg_id
                 room.add_user()
+                logger.info(f"User {user.tg_id} added in room {room.name}")
             keyboard.add(*room_buttons)
             await message.answer(f"🔆 \n Вы вошли в комнату \n🚪 {room.name}", reply_markup=keyboard)
             await state.finish()
@@ -96,39 +82,6 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         await message.answer(f"💢 \n Неверный пароль. \n Попробуйте ввести пароль еще раз",
                              reply_markup=keyboard)
         await Registartation.wait_room_password.set()
-
-# # в диспетчере задано, что когда автомат в состоянии ожидания логина, то всегда вызывается функция get_room_pass
-# async def get_room_pass(message: types.Message, state: FSMContext):
-#     keyboard_room = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     buttons = room_buttons
-#     keyboard_room.add(*buttons)
-#     keyboard_room.add('Отмена')
-#
-#     room_data = await state.get_data()
-#     room = room_data['room']
-#     room.password = message.text
-#
-#     if room.auth():
-#
-#         user = User(str(message.from_user.id))
-#         user.get_user()
-#         user_list = room.get_userlist()
-#         if user.tg_id in user_list:
-#             print('here')
-#             user.current_room = room.name
-#             user.update()
-#         else:
-#             room.new_member = user.tg_id
-#             room.add_user()
-#
-#         await message.answer(f"🔆 \n Вы вошли в комнату \n🚪 {room.name}", reply_markup=keyboard_room)
-#         await state.finish()
-#     else:
-#         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#         keyboard.add('Отмена')
-#         await message.answer(f"💢 \n Неверный пароль. \n Попробуйте ввести пароль еще раз",
-#                              reply_markup=keyboard)
-#         await Registartation.wait_room_password.set()
 
 
 async def get_user_name(message: types.Message, state: FSMContext):
@@ -147,7 +100,10 @@ async def get_user_name(message: types.Message, state: FSMContext):
         user.name = message.text
         user.current_room = room.name
         user.create()
+        room.new_member = user.tg_id
+        room.add_user()
         logger.info(f"User {user.tg_id} created")
+        logger.info(f"User {user.tg_id} added in room {room.name}")
 
         keyboard.add(*room_buttons)
         await message.answer(f"Вы успешно зарегистрированы, {user.name}!")
