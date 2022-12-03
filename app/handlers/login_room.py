@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext # продакшн: redis
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
 from app.utils.room import room_buttons
@@ -112,7 +113,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
 
 
 def register_handler_login_room(dp: Dispatcher):
-    dp.register_message_handler(login_start, commands="login", state="*")
+    dp.register_message_handler(login_start, Text(equals='Войти в комнату'), state="*")
     dp.register_message_handler(get_user_name, state=Registartation.wait_user_name)
     dp.register_message_handler(get_room_name,  state=Registartation.wait_room_name)
     dp.register_message_handler(get_room_pass, state=Registartation.wait_room_password)
