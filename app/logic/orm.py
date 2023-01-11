@@ -215,14 +215,15 @@ class Package:
                                   dbname=config.db.name,
                                   port=config.db.port)
 
-    def __init__(self, tg_id: str, room_name: str, cost=0,description='', date=date.today().strftime("%d.%m.%y"),
-                 *debtors):
+    def __init__(self, tg_id='', room_name='', cost=0, description='', date=date.today().strftime("%d.%m.%y")):
         self.payer = tg_id
         self.room_name = room_name
         self.cost = cost
         self.description = description
         self.date = date
-        self.debtors = debtors
+        self.sum_debt = 0
+        self.paid = False
+        self.trans_id = 0
 
     def create(self):
         conn = self.connection
@@ -252,6 +253,51 @@ class Package:
                 conn.commit()
                 logger.info('Query completed')
 
+    def get_products_list(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'DB query: Get debts')
+
+                query = """
+                SELECT id FROM users WHERE telegram_id=%(tg_id)s
+                """
+                curs.execute(query, {'tg_id': self.payer})
+                user_id = curs.fetchone()
+
+                query = """
+               SELECT id FROM groups WHERE group_name=%(room_name)s
+               """
+                curs.execute(query, {'room_name': self.room_name})
+                room_id = curs.fetchone()
+
+                query = """
+                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name FROM debts_for_users 
+                WHERE debtor_id=%(tg_id)s 
+                and group_id=%(room)s
+                """
+                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0]})
+                query_result = curs.fetchall()
+                logger.info('Query completed')
+
+                return query_result
+
+
+    def check_debt(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'DB query: check debt')
+
+                query = """
+                UPDATE debtors_for_users
+                paid=%(paid)s
+                WHERE 
+                """
+
+                curs.execute(query, {'tg_id': user_id[0], 'paid': True})
+                query_result = curs.fetchall()
+                logger.info('Query completed')
 
 
 

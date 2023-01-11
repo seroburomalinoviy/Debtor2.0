@@ -10,6 +10,7 @@ from app.handlers.start_bot import register_handlers_start_bot
 from app.handlers.login_room import register_handler_login_room
 from app.handlers.new_room import register_handler_create_room
 from app.handlers.add_product import register_handlers_add_product
+from app.handlers.get_debts import register_handlers_get_debts
 
 
 # Настройка логирования
@@ -51,6 +52,7 @@ async def main():
     register_handler_login_room(dp)
     register_handler_create_room(dp)
     register_handlers_add_product(dp)
+    register_handlers_get_debts(dp)
 
     print(config.tg_bot.admin_ids)
 
@@ -58,7 +60,7 @@ async def main():
     await set_commands(bot)
 
     # Запуск поллинга
-    # await dp.skip_updates()
+    await dp.skip_updates()
     await dp.start_polling()
 
     # Закрытие хранилища
