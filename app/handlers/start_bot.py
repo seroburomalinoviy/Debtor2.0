@@ -37,7 +37,6 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     if user.get_user():
         buttons = room_buttons
         keyboard.add(*buttons)
-        await message.answer("[Отменяю]")
         await message.answer(f"Вы в комнате\n🚪 {user.current_room.split(' ')[0]}", reply_markup=keyboard)
     else:
         keyboard = types.ReplyKeyboardRemove()
@@ -47,4 +46,4 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
 def register_handlers_start_bot(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands="start", state="*")
     dp.register_message_handler(cmd_cancel, commands="cancel", state="*")
-    dp.register_message_handler(cmd_cancel, Text(equals=["отмена", 'Вернуться'], ignore_case=True), state="*")
+    dp.register_message_handler(cmd_cancel, Text(equals=["отмена", 'Вернуться', 'назад'], ignore_case=True), state="*")

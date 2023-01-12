@@ -87,8 +87,8 @@ async def get_date(message: types.Message, state: FSMContext):
         product.create()
         keyboard.add(*room_buttons)
         await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
-                             f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}")
-        await message.answer(f"Записал!", reply_markup=keyboard)
+                             f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 "
+                             f"{user.current_room}" , reply_markup=keyboard)
         await state.finish()
 
     else:
@@ -100,8 +100,7 @@ async def get_date(message: types.Message, state: FSMContext):
                 product.create()
                 keyboard.add(*room_buttons)
                 await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
-                                     f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}")
-                await message.answer(f"Записал!", reply_markup=keyboard)
+                                     f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}", reply_markup=keyboard)
                 await state.finish()
             else:
                 keyboard.add('Сегодня')

@@ -247,7 +247,7 @@ class Package:
                 query = """
                 INSERT INTO payments
                 VALUES
-                ( %(id)s, %(date)s, %(payer_id)s, %(group_id)s, %(cost)s, %(description)s )
+                ( %(id)s, %(date)s, %(group_id)s, %(cost)s, %(description)s, %(payer_id)s )
                 """
                 curs.execute(query, {'id': uuid.uuid4(), 'date': self.date, 'payer_id': user_id[0], 'group_id':
                     room_id[0], 'cost': self.cost, 'description': self.description})
@@ -273,12 +273,13 @@ class Package:
                 room_id = curs.fetchone()
 
                 query = """
-                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name, description FROM 
+                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name, description, payment_accept 
+                FROM 
                 debts_for_users 
                 WHERE debtor_id=%(tg_id)s 
-                and group_id=%(room)s and paid=%(paid)s
+                and group_id=%(room)s and (paid=%(paid)s or payment_accept=%(payment)s)
                 """
-                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False})
+                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False, 'payment': False})
                 query_result = curs.fetchall()
                 logger.info('Query completed')
 
@@ -309,7 +310,7 @@ class Package:
                 logger.info(f'DB query: get product')
 
                 query = """
-                SELECT date, description FROM 
+                SELECT date, description, debt, payer_id, debtor_name FROM 
                 debts_for_users 
                 WHERE id=%(trans_id)s
                 """
@@ -318,6 +319,23 @@ class Package:
                 query_result = curs.fetchone()
                 logger.info('Query completed')
                 return query_result
+
+    def accept_payment(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'DB query: accept payment')
+
+                query = """
+                UPDATE debts_for_users SET
+                payment_accept=%(payment)s
+                WHERE id=%(trans_id)s
+                """
+
+                curs.execute(query, {'trans_id': self.transaction_id, 'payment': True})
+                conn.commit()
+                logger.info(f"Transaction id of the debt {self.transaction_id}")
+                logger.info('Query completed')
 
 
 

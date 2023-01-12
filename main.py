@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 # Регистрация команд, отображаемых в интерфейсе Telegram
-async def set_commands(bot: Bot):
-    commands = [
-        BotCommand(command="/start", description="Создай комнату или авторизуйся"),
-        BotCommand(command="/rooms", description="Переключись между своими комнатами"),
-        BotCommand(command="/cancel", description="Отменить текущее действие")
-    ]
-    await bot.set_my_commands(commands)
+# async def set_commands(bot: Bot):
+#     commands = [
+#         BotCommand(command="/start", description="Создай комнату или авторизуйся"),
+#         BotCommand(command="/rooms", description="Переключись между своими комнатами"),
+#         BotCommand(command="/cancel", description="Отменить текущее действие")
+#     ]
+#     await bot.set_my_commands(commands)
 
 
 async def main():
@@ -57,7 +57,7 @@ async def main():
     print(config.tg_bot.admin_ids)
 
     # Установка команд бота
-    await set_commands(bot)
+    # await set_commands(bot)
 
     # Запуск поллинга
     await dp.skip_updates()
