@@ -215,7 +215,8 @@ class Package:
                                   dbname=config.db.name,
                                   port=config.db.port)
 
-    def __init__(self, tg_id='', room_name='', cost=0, description='', date=date.today().strftime("%d.%m.%y")):
+    def __init__(self, tg_id='', room_name='', cost=0, description='', date=date.today().strftime("%d.%m.%y"),
+                 transaction_id=0):
         self.payer = tg_id
         self.room_name = room_name
         self.cost = cost
@@ -223,7 +224,7 @@ class Package:
         self.date = date
         self.sum_debt = 0
         self.paid = False
-        self.trans_id = 0
+        self.transaction_id = transaction_id
 
     def create(self):
         conn = self.connection
@@ -246,10 +247,10 @@ class Package:
                 query = """
                 INSERT INTO payments
                 VALUES
-                ( %(id)s, %(date)s, %(payer_id)s, %(group_id)s, %(cost)s )
+                ( %(id)s, %(date)s, %(payer_id)s, %(group_id)s, %(cost)s, %(description)s )
                 """
                 curs.execute(query, {'id': uuid.uuid4(), 'date': self.date, 'payer_id': user_id[0], 'group_id':
-                    room_id[0], 'cost': self.cost})
+                    room_id[0], 'cost': self.cost, 'description': self.description})
                 conn.commit()
                 logger.info('Query completed')
 
@@ -272,11 +273,12 @@ class Package:
                 room_id = curs.fetchone()
 
                 query = """
-                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name FROM debts_for_users 
+                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name, description FROM 
+                debts_for_users 
                 WHERE debtor_id=%(tg_id)s 
-                and group_id=%(room)s
+                and group_id=%(room)s and paid=%(paid)s
                 """
-                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0]})
+                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False})
                 query_result = curs.fetchall()
                 logger.info('Query completed')
 
@@ -290,14 +292,32 @@ class Package:
                 logger.info(f'DB query: check debt')
 
                 query = """
-                UPDATE debtors_for_users
+                UPDATE debts_for_users SET
                 paid=%(paid)s
-                WHERE 
+                WHERE id=%(trans_id)s
                 """
 
-                curs.execute(query, {'tg_id': user_id[0], 'paid': True})
-                query_result = curs.fetchall()
+                curs.execute(query, {'trans_id': self.transaction_id, 'paid': True})
+                conn.commit()
+                logger.info(f"Transaction id of the debt {self.transaction_id}")
                 logger.info('Query completed')
+
+    def get_product(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'DB query: get product')
+
+                query = """
+                SELECT date, description FROM 
+                debts_for_users 
+                WHERE id=%(trans_id)s
+                """
+
+                curs.execute(query, {'trans_id': self.transaction_id})
+                query_result = curs.fetchone()
+                logger.info('Query completed')
+                return query_result
 
 
 
