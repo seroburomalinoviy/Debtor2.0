@@ -273,13 +273,13 @@ class Package:
                 room_id = curs.fetchone()
 
                 query = """
-                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name, description, payment_accept 
+                SELECT id, debt, cost, date, paid, group_name, debtor_name, payer_name, description 
                 FROM 
                 debts_for_users 
                 WHERE debtor_id=%(tg_id)s 
-                and group_id=%(room)s and (paid=%(paid)s or payment_accept=%(payment)s)
+                and group_id=%(room)s and paid=%(paid)s
                 """
-                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False, 'payment': False})
+                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False})
                 query_result = curs.fetchall()
                 logger.info('Query completed')
 
@@ -310,7 +310,7 @@ class Package:
                 logger.info(f'DB query: get product')
 
                 query = """
-                SELECT date, description, debt, payer_id, debtor_name FROM 
+                SELECT date, description, debt, payer_id, debtor_name, debtor_tg_id, paid FROM 
                 debts_for_users 
                 WHERE id=%(trans_id)s
                 """
