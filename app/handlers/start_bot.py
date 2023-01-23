@@ -11,7 +11,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     user = User(str(message.from_user.id))
     buttons = ['Войти в комнату', 'Создать комнату']
-    keyboard.add(*buttons)
+    keyboard.add(buttons[0], buttons[1])
+    keyboard.add(buttons[2])
     if user.get_user():
         keyboard.add('Вернуться')
         mes = f"""
@@ -36,7 +37,8 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     user = User(str(message.from_user.id))
     if user.get_user():
         buttons = room_buttons
-        keyboard.add(*buttons)
+        keyboard.add(buttons[0], buttons[1])
+        keyboard.add(buttons[2])
         await message.answer(f"Вы в комнате\n🚪 {user.current_room.split(' ')[0]}", reply_markup=keyboard)
     else:
         keyboard = types.ReplyKeyboardRemove()
