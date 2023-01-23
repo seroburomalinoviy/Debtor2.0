@@ -15,7 +15,6 @@ from app.handlers.get_debts_by_participant import register_handlers_get_debts_by
 from app.handlers.look_around import register_handlers_look_around
 
 
-
 # Настройка логирования
 logger = logging.getLogger(__name__)
 

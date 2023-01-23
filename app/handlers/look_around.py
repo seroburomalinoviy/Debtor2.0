@@ -22,16 +22,11 @@ async def get_members(message: types.Message, state: FSMContext):
     answer_title = f"С вами в комнате «{user.current_room.split(' ')[0]}»🚪 находятся:\n\n"
     answer_content = ""
     answer_if_one = f"В комнате «{user.current_room.split(' ')[0]}»🚪 находитесь  только вы."
-    for id,info in room_participants.items():
+    for id, info in room_participants.items():
         if user.tg_id != id:
-            answer_content+=f"{'@'+info[0].split(' ')[0] if info[0] else '👤 '} ({info[1].split(' ')[0]})\n"
+            answer_content += f"{'@'+info[0].split(' ')[0] if info[0] else '👤 '} ({info[1].split(' ')[0]})\n"
 
     await message.answer(answer_title+answer_content if answer_content else answer_if_one, reply_markup=keyboard)
-
-
-
-
-
 
 
 def register_handlers_look_around(dp: Dispatcher):
