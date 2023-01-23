@@ -285,7 +285,6 @@ class Package:
 
                 return query_result
 
-
     def check_debt(self):
         conn = self.connection
         with conn:

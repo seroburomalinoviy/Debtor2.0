@@ -135,7 +135,7 @@ async def payer_accepted_payment(call: types.CallbackQuery, state: FSMContext):
 
 
 def register_handlers_get_debts(dp: Dispatcher):
-    dp.register_message_handler(start_get_debts, Text(equals='Мои долги', ignore_case=False), state='*')
+    dp.register_message_handler(start_get_debts, Text(equals='Мои операции', ignore_case=False), state='*')
     dp.register_message_handler(package_products, Text(equals='Покупками', ignore_case=False), state='*')
 
     dp.register_callback_query_handler(check_product, Text(startswith='check_'), state="*")
