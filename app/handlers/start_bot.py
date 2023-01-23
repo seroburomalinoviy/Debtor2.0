@@ -14,7 +14,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
         first_in_keyboard.add('Вернуться')
         mes = f"""
         Ты в Прихожей🔑\n\nСтоишь у комнаты\n«{user.current_room}»🚪\n
-[Выбери действие]
+Ты можешь войти или создать комнату.
                 """
     else:
         mes = f"""
