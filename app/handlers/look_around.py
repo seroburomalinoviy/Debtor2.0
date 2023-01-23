@@ -19,9 +19,9 @@ async def get_members(message: types.Message, state: FSMContext):
     room = Room(name=user.current_room)
     room_participants = room.get_userlist()
 
-    answer_title = f"С вами в комнате «{user.current_room.split(' ')[0]}»🚪 находятся:\n\n"
+    answer_title = f"С вами в комнате «{user.current_room}»🚪 находятся:\n\n"
     answer_content = ""
-    answer_if_one = f"В комнате «{user.current_room.split(' ')[0]}»🚪 находитесь  только вы."
+    answer_if_one = f"В комнате «{user.current_room}»🚪 находитесь  только вы."
     for id, info in room_participants.items():
         if user.tg_id != id:
             answer_content += f"{'@'+info[0].split(' ')[0] if info[0] else '👤 '} ({info[1].split(' ')[0]})\n"

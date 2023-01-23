@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import general_keyboard, first_in_keyboard, first_in_buttons
+from app.utils.room import general_keyboard, first_in_keyboard, first_in_buttons, cancel_keyboard
 
 import logging
 
@@ -26,8 +26,6 @@ async def start_creating(message: types.Message, state: FSMContext):
 
 
 async def get_room_name(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Отмена')
     if len(message.text) < 30:
         # Создаем комнату
         room = Room(name=message.text)
@@ -35,15 +33,15 @@ async def get_room_name(message: types.Message, state: FSMContext):
         if not room.exist_room():
             await state.update_data(room=room) # сохраняем информацию о комнате в виде значения словаря
             await Registration.next()
-            await message.answer(f"Создайте пароль для комнаты \n🚪 ...", reply_markup=keyboard)
+            await message.answer(f"Создайте пароль для комнаты \n🚪 ...", reply_markup=cancel_keyboard)
         else:
-            await message.answer(f"Это название уже существует, попробуй еще раз", reply_markup=keyboard)
+            await message.answer(f"Это название уже существует, попробуй еще раз", reply_markup=cancel_keyboard)
     else:
-        await message.answer(f"Слишком длинное название, попробуй еще раз", reply_markup=keyboard)
+        await message.answer(f"Слишком длинное название, попробуй еще раз", reply_markup=cancel_keyboard)
 
 
 async def get_room_pass(message: types.Message, state: FSMContext):
-    keyboard = first_in_keyboard
+    keyboard = general_keyboard
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
@@ -58,8 +56,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         del user
         await state.update_data(room=room)
         await Registration.next()
-        await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=types.ReplyKeyboardMarkup(
-            resize_keyboard=True).add('Отмена'))
+        await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=cancel_keyboard)
     else:
         # пользователь уже зарегистрирован, добавим новую запись в бд с данным пользователем и новой комнатой
         room.create()
@@ -71,7 +68,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.update() # обновоили текущую комнату пользователя
 
         logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
-        await message.answer(f"""Вы вошли в комнату \n«{user.current_room.split(' ')[0]}»🚪""",
+        await message.answer(f"""Вы вошли в комнату 🔑\n«{user.current_room}»🚪""",
                              reply_markup=keyboard)
         await state.finish()
 
@@ -91,7 +88,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
     room.update()
     room.add_user()  # добавим в комнату юзера
     logger.info(f"User {user.tg_id} created and added in room {user.current_room}")
-    await message.answer(f"Вы успешно зарегистрировались и вошли в комнату \n🚪«{user.current_room.split(' ')[0]}»🚪",
+    await message.answer(f"Вы успешно зарегистрировались и вошли в комнату 🔑\n«{user.current_room}»🚪",
                          reply_markup=keyboard)
     await state.finish()
 

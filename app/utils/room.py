@@ -1,6 +1,6 @@
 from aiogram import types
 general_buttons = ['Мои операции⚙️', 'Добавить покупки🛍', 'Осмотреться в комнате👥']
-first_in_buttons = ['Войти в комнату', 'Создать комнату']
+first_in_buttons = ['Войти в комнату🔑', 'Создать комнату🚪']
 cancel_buttons = ["отмена", 'Вернуться', 'назад🔙']
 myoperations_buttons = ['Покупками🛍', 'Участнику👤','Отметить суммой💰','Назад🔙']
 myoperations_reference = """В этом меню ты можешь выбрать, в каком виде ты хочешь получить выписку по долгам📝.\n 
@@ -21,3 +21,5 @@ myoperations_keyboard.add(myoperations_buttons[3])
 general_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 general_keyboard.add(general_buttons[0], general_buttons[1])
 general_keyboard.add(general_buttons[2])
+
+cancel_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add('Отмена')
