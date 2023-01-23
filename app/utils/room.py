@@ -9,6 +9,10 @@ myoperations_reference = """В этом меню ты можешь выбрат�
 Задолженность участнику👤 - предоставит список всех участников комнаты и долги каждому из них, а также возможность отметить все задолженность одному участнику.\n
 Отметить суммой💰 - меню для оплаты долгов на определенную сумму, которую ты вводишь сам\n"""
 
+first_in_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+first_in_keyboard.add(first_in_buttons[0])
+first_in_keyboard.add(first_in_buttons[1])
+
 myoperations_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 myoperations_keyboard.add(myoperations_buttons[0], myoperations_buttons[1])
 myoperations_keyboard.add(myoperations_buttons[2])

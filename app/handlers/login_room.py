@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import first_in_buttons, general_keyboard
+from app.utils.room import first_in_keyboard, general_keyboard, first_in_buttons
 
 import logging
 
@@ -31,7 +31,7 @@ async def login_start(message: types.Message, state: FSMContext):
 
 
 async def get_room_name(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = first_in_keyboard
 
     if len(message.text) > 30:
         # продолжаем ожидать ввода пароля, не переводим в автомат в след сост
@@ -45,8 +45,6 @@ async def get_room_name(message: types.Message, state: FSMContext):
             keyboard.add('Отмена')
             await message.answer("Введите пароль\n🚪 ...", reply_markup=keyboard)
         else:
-            keyboard.add("/create_room")
-            keyboard.add("/login")
             keyboard.add('Отмена')
             await message.answer("Такой комнаты не существует, попробуйте создать комнату или повторить попытку",
                                  reply_markup=keyboard)
@@ -100,6 +98,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
         user = User(str(message.from_user.id))
         user.name = message.text
         user.current_room = room.name
+        user.tg_name = str(message.from_user.username)
         user.create()
         room.new_member = user.tg_id
         room.add_user()

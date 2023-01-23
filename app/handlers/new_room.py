@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import first_in_buttons, general_keyboard
+from app.utils.room import general_keyboard, first_in_keyboard, first_in_buttons
 
 import logging
 
@@ -43,7 +43,7 @@ async def get_room_name(message: types.Message, state: FSMContext):
 
 
 async def get_room_pass(message: types.Message, state: FSMContext):
-    keyboard = general_keyboard
+    keyboard = first_in_keyboard
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
@@ -58,8 +58,8 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         del user
         await state.update_data(room=room)
         await Registration.next()
-        keyboard.add('Отмена')
-        await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=keyboard)
+        await message.answer(f"Вы не зарегистрированы. Введите свое имя", reply_markup=types.ReplyKeyboardMarkup(
+            resize_keyboard=True).add('Отмена'))
     else:
         # пользователь уже зарегистрирован, добавим новую запись в бд с данным пользователем и новой комнатой
         room.create()
