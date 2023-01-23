@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import room_buttons
+from app.utils.room import general_buttons, first_in_buttons
 
 import logging
 
@@ -71,7 +71,8 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.update() # обновоили текущую комнату пользователя
 
         logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
-        keyboard.add(*room_buttons)
+        keyboard.add(general_buttons[0], general_buttons[1])
+        keyboard.add(general_buttons[2])
         await message.answer(f"""Вы вошли в комнату \n🚪 {user.current_room} """,
                              reply_markup=keyboard)
         await state.finish()
@@ -79,7 +80,8 @@ async def get_room_pass(message: types.Message, state: FSMContext):
 
 async def get_user_name(message: types.Message, state: FSMContext):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(*room_buttons)
+    keyboard.add(general_buttons[0], general_buttons[1])
+    keyboard.add(general_buttons[2])
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
@@ -98,7 +100,7 @@ async def get_user_name(message: types.Message, state: FSMContext):
 
 
 def register_handler_create_room(dp: Dispatcher):
-    dp.register_message_handler(start_creating, Text(equals='Создать комнату'), state="*")
+    dp.register_message_handler(start_creating, Text(equals=first_in_buttons[1]), state="*")
     dp.register_message_handler(get_room_name, state=Registration.wait_room_name)
     dp.register_message_handler(get_room_pass, state=Registration.wait_room_pass)
     dp.register_message_handler(get_user_name, state=Registration.wait_user_name)

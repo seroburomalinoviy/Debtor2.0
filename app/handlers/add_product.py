@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from app.logic.orm import User, Package
-from app.utils.room import room_buttons
+from app.utils.room import general_buttons
 
 import logging
 import datetime
@@ -85,7 +85,8 @@ async def get_date(message: types.Message, state: FSMContext):
     if message.text == 'Сегодня':
 
         product.create()
-        keyboard.add(*room_buttons)
+        keyboard.add(general_buttons[0], general_buttons[1])
+        keyboard.add(general_buttons[2])
         await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
                              f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 "
                              f"{user.current_room}" , reply_markup=keyboard)
@@ -98,7 +99,8 @@ async def get_date(message: types.Message, state: FSMContext):
             if input_date <= datetime.datetime.today():
                 product.date = datetime.datetime.strptime(message.text, "%d%m%Y").strftime("%d.%m.%y")
                 product.create()
-                keyboard.add(*room_buttons)
+                keyboard.add(general_buttons[0], general_buttons[1])
+                keyboard.add(general_buttons[2])
                 await message.answer(f"Описание: {product.description}\nСтоимость: {product.cost}р\nДата:"
                                      f" {product.date}\nОплатили: Вы\nПокупка будет разделена в комнате 🚪 {user.current_room}", reply_markup=keyboard)
                 await state.finish()
@@ -116,7 +118,7 @@ async def get_date(message: types.Message, state: FSMContext):
 
 
 def register_handlers_add_product(dp: Dispatcher):
-    dp.register_message_handler(take_package, Text(equals="Добавить покупку", ignore_case=False), state="*")
+    dp.register_message_handler(take_package, Text(equals=general_buttons[1], ignore_case=False), state="*")
     dp.register_message_handler(get_cost,  state=Registration.wait_cost)
     dp.register_message_handler(get_description, state=Registration.wait_description)
     dp.register_message_handler(get_date,  state=Registration.wait_date)

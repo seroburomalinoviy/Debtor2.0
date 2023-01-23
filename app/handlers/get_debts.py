@@ -7,6 +7,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram import Bot
 
 from app.logic.orm import User, Package
+from app.utils.room import general_buttons, myoperations_buttons, myoperations_reference
 
 import logging
 import random
@@ -22,11 +23,10 @@ class Registration(StatesGroup):
 async def start_get_debts(message: types.Message, state: FSMContext):
     await state.finish()
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add('Покупками')
-    keyboard.add('Плательщиками')
-    keyboard.add('Назад')
-
-    await message.answer(f"Выберете представление списка долгов", reply_markup=keyboard)
+    keyboard.add(myoperations_buttons[0],myoperations_buttons[1])
+    keyboard.add(myoperations_buttons[2])
+    keyboard.add(myoperations_buttons[3])
+    await message.answer(myoperations_reference, reply_markup=keyboard)
 
 
 async def package_products(message: types.Message, state: FSMContext):
@@ -43,7 +43,8 @@ async def package_products(message: types.Message, state: FSMContext):
     emoji = ['🔴','🟠','🟡','🟢','🔵','🟣','⚫️','⚪️','🟤']
 
     if not list_of_products:
-        await message.answer(f"Поздравляю, у вас нет долгов 🔆")
+        await message.answer(f"Долгов нет, можно идти за покупками! 🔆")
+        await message.answer(f"🛒")
     else:
         for id, debt, cost, date, paid, room, user_name, payer_name, product_name in list_of_products:
 
@@ -135,8 +136,8 @@ async def payer_accepted_payment(call: types.CallbackQuery, state: FSMContext):
 
 
 def register_handlers_get_debts(dp: Dispatcher):
-    dp.register_message_handler(start_get_debts, Text(equals='Мои операции', ignore_case=False), state='*')
-    dp.register_message_handler(package_products, Text(equals='Покупками', ignore_case=False), state='*')
+    dp.register_message_handler(start_get_debts, Text(equals=general_buttons[0], ignore_case=False), state='*')
+    dp.register_message_handler(package_products, Text(equals=myoperations_buttons[0], ignore_case=False), state='*')
 
     dp.register_callback_query_handler(check_product, Text(startswith='check_'), state="*")
     dp.register_callback_query_handler(payer_accepted_payment, Text(startswith='accept_'),state="*")
