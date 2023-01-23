@@ -196,6 +196,7 @@ class Room:
                 """
                 curs.execute(query, {'room_name': self.name})
                 room_id = curs.fetchone()
+                print(room_id)
                 query = """
                 SELECT DISTINCT telegram_id, tg_name, name FROM public.users inner join public.users_groups on 
                 public.users_groups.user_id=public.users.id WHERE group_id=%(room_id)s

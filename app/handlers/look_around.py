@@ -24,7 +24,7 @@ async def get_members(message: types.Message, state: FSMContext):
     answer_if_one = f"В комнате «{user.current_room}»🚪 находитесь  только вы."
     for id, info in room_participants.items():
         if user.tg_id != id:
-            answer_content += f"{'@'+info[0].split(' ')[0] if info[0] else '👤 '} ({info[1].split(' ')[0]})\n"
+            answer_content += f"{'@'+info[0].split(' ')[0] if info[0] else '👤 '} ({info[1]})\n"
 
     await message.answer(answer_title+answer_content if answer_content else answer_if_one, reply_markup=keyboard)
 
