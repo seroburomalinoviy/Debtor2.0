@@ -4,9 +4,10 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import general_buttons, first_in_buttons
+from app.utils.room import first_in_buttons, general_keyboard
 
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ async def get_room_name(message: types.Message, state: FSMContext):
 
 # в диспетчере задано, что когда автомат в состоянии ожидания логина, то всегда вызывается функция get_room_pass
 async def get_room_pass(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = general_keyboard
 
     room_data = await state.get_data()
     room = room_data['room']
@@ -71,8 +72,6 @@ async def get_room_pass(message: types.Message, state: FSMContext):
                 room.new_member = user.tg_id
                 room.add_user()
                 logger.info(f"User {user.tg_id} added in room {room.name}")
-            keyboard.add(general_buttons[0], general_buttons[1])
-            keyboard.add(general_buttons[2])
             await message.answer(f"🔆 \n Вы вошли в комнату \n🚪 {room.name}", reply_markup=keyboard)
             await state.finish()
         else:
@@ -87,7 +86,7 @@ async def get_room_pass(message: types.Message, state: FSMContext):
 
 
 async def get_user_name(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = general_keyboard
 
     room_data = await state.get_data()
     room = room_data['room']
@@ -104,11 +103,10 @@ async def get_user_name(message: types.Message, state: FSMContext):
         user.create()
         room.new_member = user.tg_id
         room.add_user()
+
         logger.info(f"User {user.tg_id} created")
         logger.info(f"User {user.tg_id} added in room {room.name}")
 
-        keyboard.add(general_buttons[0], general_buttons[1])
-        keyboard.add(general_buttons[2])
         await message.answer(f"Вы успешно зарегистрированы, {user.name}!")
         await message.answer(f"🔆 \n Вы вошли в комнату \n🚪 {room.name}", reply_markup=keyboard)
         await state.finish()

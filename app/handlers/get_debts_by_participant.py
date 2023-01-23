@@ -7,18 +7,12 @@ from aiogram.dispatcher.filters import Text
 from aiogram import Bot
 
 from app.logic.orm import User, Package
-from app.utils.room import general_buttons, myoperations_buttons, myoperations_reference, myoperations_keyboard
+from app.utils.room import general_buttons, myoperations_buttons, myoperations_reference
 
 import logging
 import random
 
 logger = logging.getLogger(__name__)
-
-
-async def start_get_debts(message: types.Message, state: FSMContext):
-    await state.finish()
-    await message.answer(myoperations_reference, reply_markup=myoperations_keyboard)
-
 
 async def package_products(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -30,7 +24,7 @@ async def package_products(message: types.Message):
     user.get_user()
     package = Package(user.tg_id, user.current_room)
     list_of_products = package.get_products_list()
-    emoji = ['🔴','🟠','🟡','🟢','🔵','🟣','⚫️','⚪️','🟤', '🟥', '🟧','🟨','⬛️','🟪','⬜️','🔷','🟦','🔶','🟩']
+    emoji = ['🔴','🟠','🟡','🟢','🔵','🟣','⚫️','⚪️','🟤']
 
     if not list_of_products:
         await message.answer(f"Долгов нет, можно идти за покупками! 🔆")
@@ -125,8 +119,7 @@ async def payer_accepted_payment(call: types.CallbackQuery, state: FSMContext):
                                                                    f"подтверждена! 🎉")
 
 
-def register_handlers_get_debts(dp: Dispatcher):
-    dp.register_message_handler(start_get_debts, Text(equals=general_buttons[0], ignore_case=False), state='*')
+def register_handlers_get_debts_by_participant(dp: Dispatcher):
     dp.register_message_handler(package_products, Text(equals=myoperations_buttons[0], ignore_case=False), state='*')
     dp.register_callback_query_handler(check_product, Text(startswith='check_'), state="*")
     dp.register_callback_query_handler(payer_accepted_payment, Text(startswith='accept_'),state="*")

@@ -20,8 +20,9 @@ class User:
                                   dbname=config.db.name,
                                   port=config.db.port)
     
-    def __init__(self, tg_id, name='', join_date=date.today().strftime("%d.%m.%y"), current_room=None):
+    def __init__(self, tg_id, tg_name='',name='', join_date=date.today().strftime("%d.%m.%y"), current_room=None):
         self.tg_id = tg_id
+        self.tg_name = tg_name
         self.name = name
         self.join_date = join_date
         self.current_room = current_room
@@ -36,11 +37,11 @@ class User:
                 query = """
                 INSERT INTO users 
                 VALUES 
-                ( %(id)s, %(telegram_id)s, %(name)s, %(join_date)s, %(current_group)s )
+                ( %(id)s, %(telegram_id)s, %(name)s, %(join_date)s, %(current_group)s, %(tg_name)s )
                 """
 
                 curs.execute(query, {'id':uuid.uuid4(), 'telegram_id': self.tg_id, 'name': self.name,
-                                     'join_date':self.join_date,'current_group': self.current_room})
+                                     'join_date':self.join_date,'current_group': self.current_room, 'tg_name': self.tg_name})
                 conn.commit()
                 logger.info('Query completed')
 
@@ -50,7 +51,7 @@ class User:
             with conn.cursor() as curs:
                 logger.info(f'Database query: get data for user {self.tg_id}')
 
-                curs.execute("SELECT name, join_date, current_group FROM users WHERE telegram_id=%(tg_id)s",
+                curs.execute("SELECT name, join_date, current_group, tg_name FROM users WHERE telegram_id=%(tg_id)s",
                              {"tg_id": self.tg_id})
                 query_result = curs.fetchone()
 
@@ -59,6 +60,7 @@ class User:
                     self.name = query_result[0]
                     self.join_date = query_result[1]
                     self.current_room = query_result[2]
+                    self.tg_name = query_result[3]
                     return True
                 else:
                     return False
@@ -195,15 +197,16 @@ class Room:
                 curs.execute(query, {'room_name': self.name})
                 room_id = curs.fetchone()
                 query = """
-                SELECT DISTINCT telegram_id FROM public.users inner join public.users_groups on 
+                SELECT DISTINCT telegram_id, tg_name, name FROM public.users inner join public.users_groups on 
                 public.users_groups.user_id=public.users.id WHERE group_id=%(room_id)s
                 """
                 curs.execute(query, {'room_id': room_id[0]})
                 query_result = curs.fetchall()
                 logger.info('Query completed')
 
-                userlist = [i[0].split(' ')[0] for i in query_result]
+                userlist = {i[0].split(' ')[0]: [i[1], i[2]] for i in query_result}
                 return userlist
+
 
 
 class Package:

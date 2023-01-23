@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User, Room
-from app.utils.room import general_buttons, first_in_buttons
+from app.utils.room import first_in_buttons, general_keyboard
 
 import logging
 
@@ -43,7 +43,7 @@ async def get_room_name(message: types.Message, state: FSMContext):
 
 
 async def get_room_pass(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard = general_keyboard
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
@@ -71,24 +71,20 @@ async def get_room_pass(message: types.Message, state: FSMContext):
         user.update() # обновоили текущую комнату пользователя
 
         logger.info(f"User {user.tg_id} authorized and added in room {user.current_room}")
-        keyboard.add(general_buttons[0], general_buttons[1])
-        keyboard.add(general_buttons[2])
         await message.answer(f"""Вы вошли в комнату \n🚪 {user.current_room} """,
                              reply_markup=keyboard)
         await state.finish()
 
 
 async def get_user_name(message: types.Message, state: FSMContext):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(general_buttons[0], general_buttons[1])
-    keyboard.add(general_buttons[2])
+    keyboard = general_keyboard
 
     # выгружаем данные о комнате
     room_data = await state.get_data()
     room = room_data['room']
     room.create()  # сохраняем записанные данные в бд
     # создаем пользователя и привязываем его к комнате
-    user = User(tg_id=str(message.from_user.id), name=message.text, current_room=room.name)
+    user = User(tg_id=str(message.from_user.id), name=message.text, current_room=room.name, tg_name=message.from_user.username)
     user.create()
     room.owner = user.tg_id
     room.new_member = user.tg_id

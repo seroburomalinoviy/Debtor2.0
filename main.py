@@ -11,6 +11,9 @@ from app.handlers.login_room import register_handler_login_room
 from app.handlers.new_room import register_handler_create_room
 from app.handlers.add_product import register_handlers_add_product
 from app.handlers.get_debts import register_handlers_get_debts
+from app.handlers.get_debts_by_participant import register_handlers_get_debts_by_participant
+from app.handlers.look_around import register_handlers_look_around
+
 
 
 # Настройка логирования
@@ -31,7 +34,7 @@ async def main():
     # Настройка логирования
     logging.basicConfig(
         level=logging.INFO,
-        format="%(name)s - %(asctime)s - %(levelname)s - %(message)s",
+        format="%(name)s - %(asctime)s - %(levelname)s - %(message)s"
     )
 
     logger.info("Starting bot")
@@ -53,6 +56,8 @@ async def main():
     register_handler_create_room(dp)
     register_handlers_add_product(dp)
     register_handlers_get_debts(dp)
+    register_handlers_get_debts_by_participant(dp)
+    register_handlers_look_around(dp)
 
     print(config.tg_bot.admin_ids)
 
