@@ -22,9 +22,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 Для того чтобы войти в комнату, вам будет предложено ввести уникальное название комнаты и пароль.\n
 Также вы можете создать свою комнату 🚪\n
         """
-    await message.answer(mes,
-        reply_markup=first_in_keyboard
-    )
+    await message.answer(mes, reply_markup=first_in_keyboard)
 
 
 async def cmd_cancel(message: types.Message, state: FSMContext):
