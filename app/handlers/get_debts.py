@@ -28,7 +28,7 @@ async def package_products(message: types.Message):
 
     user = User(str(message.from_user.id))
     user.get_user()
-    package = Package(user.tg_id, user.current_room)
+    package = Package(user.tg_id, user.current_room, paid=False)
     list_of_products = package.get_products_list()
     emoji = ['🔴','🟠','🟡','🟢','🔵','🟣','⚫️','⚪️','🟤', '🟥', '🟧','🟨','⬛️','🟪','⬜️','🔷','🟦','🔶','🟩']
 

@@ -3,6 +3,7 @@ import psycopg2.extras
 import logging
 from datetime import date
 import uuid
+import asyncpg
 
 from app.utils.config_reader import load_config
 
@@ -196,7 +197,6 @@ class Room:
                 """
                 curs.execute(query, {'room_name': self.name})
                 room_id = curs.fetchone()
-                print(room_id)
                 query = """
                 SELECT DISTINCT telegram_id, tg_name, name FROM public.users inner join public.users_groups on 
                 public.users_groups.user_id=public.users.id WHERE group_id=%(room_id)s
@@ -220,14 +220,14 @@ class Package:
                                   port=config.db.port)
 
     def __init__(self, tg_id='', room_name='', cost=0, description='', date=date.today().strftime("%d.%m.%y"),
-                 transaction_id=0):
+                 transaction_id=0, paid=False):
         self.payer = tg_id
         self.room_name = room_name
         self.cost = cost
         self.description = description
         self.date = date
         self.sum_debt = 0
-        self.paid = False
+        self.paid = paid
         self.transaction_id = transaction_id
 
     def create(self):
@@ -258,6 +258,7 @@ class Package:
                 conn.commit()
                 logger.info('Query completed')
 
+# FIXME: update query to db
     def get_products_list(self):
         conn = self.connection
         with conn:
@@ -283,7 +284,7 @@ class Package:
                 WHERE debtor_id=%(tg_id)s 
                 and group_id=%(room)s and paid=%(paid)s
                 """
-                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': False})
+                curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': self.paid})
                 query_result = curs.fetchall()
                 logger.info('Query completed')
 
