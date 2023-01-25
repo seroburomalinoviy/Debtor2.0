@@ -4,6 +4,7 @@ import logging
 from datetime import date
 import uuid
 import asyncpg
+from time import perf_counter
 
 from app.utils.config_reader import load_config
 
@@ -192,6 +193,7 @@ class Room:
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: get users at room  {self.name}')
+
                 query = """
                 SELECT id FROM groups WHERE group_name=%(room_name)s
                 """
@@ -235,7 +237,7 @@ class Package:
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'Database query: create package')
-
+                start = perf_counter()
                 query = """
                 SELECT id FROM users WHERE telegram_id=%(tg_id)s
                 """
@@ -256,7 +258,7 @@ class Package:
                 curs.execute(query, {'id': uuid.uuid4(), 'date': self.date, 'payer_id': user_id[0], 'group_id':
                     room_id[0], 'cost': self.cost, 'description': self.description})
                 conn.commit()
-                logger.info('Query completed')
+                logger.info(f'Query completed\n{perf_counter()-start}')
 
 # FIXME: update query to db
     def get_products_list(self):
@@ -264,7 +266,7 @@ class Package:
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'DB query: Get debts')
-
+                start = perf_counter()
                 query = """
                 SELECT id FROM users WHERE telegram_id=%(tg_id)s
                 """
@@ -286,15 +288,19 @@ class Package:
                 """
                 curs.execute(query, {'tg_id': user_id[0], 'room': room_id[0], 'paid': self.paid})
                 query_result = curs.fetchall()
-                logger.info('Query completed')
+                logger.info(f'Query completed\n{perf_counter()-start}')
 
                 return query_result
+
+    def get_debts_user_payer(self):
+
 
     def check_debt(self):
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'DB query: check debt')
+                start = perf_counter()
 
                 query = """
                 UPDATE debts_for_users SET
@@ -305,13 +311,14 @@ class Package:
                 curs.execute(query, {'trans_id': self.transaction_id, 'paid': True})
                 conn.commit()
                 logger.info(f"Transaction id of the debt {self.transaction_id}")
-                logger.info('Query completed')
+                logger.info(f'Query completed\n{perf_counter()-start}')
 
     def get_product(self):
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'DB query: get product')
+                start = perf_counter()
 
                 query = """
                 SELECT date, description, debt, payer_id, debtor_name, debtor_tg_id, paid FROM 
@@ -321,7 +328,7 @@ class Package:
 
                 curs.execute(query, {'trans_id': self.transaction_id})
                 query_result = curs.fetchone()
-                logger.info('Query completed')
+                logger.info(f'Query completed\n{perf_counter()-start}')
                 return query_result
 
     def accept_payment(self):
@@ -329,6 +336,7 @@ class Package:
         with conn:
             with conn.cursor() as curs:
                 logger.info(f'DB query: accept payment')
+                start = perf_counter()
 
                 query = """
                 UPDATE debts_for_users SET
@@ -339,7 +347,7 @@ class Package:
                 curs.execute(query, {'trans_id': self.transaction_id, 'payment': True})
                 conn.commit()
                 logger.info(f"Transaction id of the debt {self.transaction_id}")
-                logger.info('Query completed')
+                logger.info(f'Query completed\n{perf_counter()-start}')
 
 
 

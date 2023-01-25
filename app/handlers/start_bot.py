@@ -3,7 +3,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
 from app.logic.orm import User
-from app.utils.room import general_buttons, cancel_buttons, first_in_keyboard, general_keyboard
+from app.utils.room import cancel_buttons, first_in_keyboard, general_keyboard
+
+keyboard = first_in_keyboard.add('Вернуться')
 
 
 async def cmd_start(message: types.Message, state: FSMContext):
@@ -11,7 +13,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user = User(str(message.from_user.id))
 
     if user.get_user():
-        first_in_keyboard.add('Вернуться')
         mes = f"""
         Ты в Прихожей🔑\n\nСтоишь у комнаты\n«{user.current_room}»🚪\n
 Ты можешь войти или создать комнату.
@@ -22,7 +23,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 Для того чтобы войти в комнату, вам будет предложено ввести уникальное название комнаты и пароль.\n
 Также вы можете создать свою комнату 🚪\n
         """
-    await message.answer(mes, reply_markup=first_in_keyboard)
+    await message.answer(mes, reply_markup=keyboard)
 
 
 async def cmd_cancel(message: types.Message, state: FSMContext):
@@ -31,7 +32,6 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     if user.get_user():
         await message.answer(f"Вы в главном меню⚒\nКомната «{user.current_room}»🚪", reply_markup=general_keyboard)
     else:
-        keyboard = types.ReplyKeyboardRemove()
         await message.answer("[Отменяю]", reply_markup=cancel_buttons)
 
 
