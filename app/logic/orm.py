@@ -265,7 +265,7 @@ class Package:
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info(f'DB query: Get debts')
+                logger.info(f'[DB query]: Get debts')
                 start = perf_counter()
                 query = """
                 SELECT id FROM users WHERE telegram_id=%(tg_id)s
@@ -293,13 +293,47 @@ class Package:
                 return query_result
 
     def get_debts_user_payer(self):
+        conn = self.connection
+        with conn:
+            with conn.cursor() as curs:
+                logger.info(f'[DB query]: get_debts_user_payer')
+                start = perf_counter()
+
+                query = """
+                   SELECT id FROM users WHERE telegram_id=%(tg_id)s
+                   """
+                curs.execute(query, {'tg_id': self.payer})
+                user_id = curs.fetchone()
+
+                query = """
+                  SELECT id FROM groups WHERE group_name=%(room_name)s
+                  """
+                curs.execute(query, {'room_name': self.room_name})
+                room_id = curs.fetchone()
+
+                query = """
+                -- Собрали суммы долгов участникам комнаты, которым должен я.
+-- SELECT payer_id, sum(debt) FROM debts_for_users where paid=False and debtor_tg_id='250545783' group by payer_id
+-- Найдем сумму долгов моих плательщикам мне.
+-- select debtor_tg_id, sum(debt) FROM debts_for_users where paid=False and payer_id ='250545783' group by debtor_tg_id
+
+
+select payers, my_money, my_debts from 
+	(select debtor_tg_id as payers, sum(debt) as my_money FROM debts_for_users where paid=False and payer_id ='250545783' group by debtor_tg_id) as my_first 
+	left join 
+	(SELECT payer_id, sum(debt)as my_debts FROM debts_for_users where paid=False and debtor_tg_id='250545783' group by payer_id) as my_t 
+	on my_first.payers=my_t.payer_id 
+                """
+
+
+                
 
 
     def check_debt(self):
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info(f'DB query: check debt')
+                logger.info(f'[DB query]: check debt')
                 start = perf_counter()
 
                 query = """
@@ -317,7 +351,7 @@ class Package:
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info(f'DB query: get product')
+                logger.info(f'[DB query]: get product')
                 start = perf_counter()
 
                 query = """
@@ -335,7 +369,7 @@ class Package:
         conn = self.connection
         with conn:
             with conn.cursor() as curs:
-                logger.info(f'DB query: accept payment')
+                logger.info(f'[DB query]: accept payment')
                 start = perf_counter()
 
                 query = """
